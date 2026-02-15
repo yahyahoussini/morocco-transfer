@@ -18,6 +18,7 @@ import { useI18n } from "@/lib/i18n";
 import type { RouteRow } from "@/lib/pricing";
 import { NotificationSettings } from "@/components/NotificationSettings";
 import { registerServiceWorker } from "@/lib/registerServiceWorker";
+import { subscribeToPushNotifications } from "@/lib/pushNotifications";
 
 const ADMIN_PIN = "1234";
 const NOTIFICATION_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
@@ -355,11 +356,22 @@ const AdminDashboard = () => {
     return () => { supabase.removeChannel(channel); };
   }, [authenticated, playAlertSound, sendSystemNotification]);
 
-  const handlePinComplete = (value: string) => {
+  const handlePinComplete = async (value: string) => {
     setPin(value);
     if (value === ADMIN_PIN) {
       setAuthenticated(true);
       localStorage.setItem("admin_authenticated", "true");
+
+      // Auto-subscribe to push notifications on first login
+      try {
+        const sub = await subscribeToPushNotifications('admin-device');
+        if (sub) {
+          toast.success("Notifications enabled automatically!");
+        }
+      } catch (err) {
+        console.error("Auto-subscribe failed:", err);
+        // Non-blocking: user can still enable manually from Settings
+      }
     } else {
       toast.error("Invalid PIN");
       setPin("");
