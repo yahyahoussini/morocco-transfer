@@ -6,7 +6,8 @@ import {
     unsubscribeFromPushNotifications,
     getPushSubscription,
     isPushNotificationSupported,
-    getNotificationPermissionStatus
+    getNotificationPermissionStatus,
+    sendTestPushNotification
 } from "@/lib/pushNotifications";
 import { toast } from "sonner";
 
@@ -131,15 +132,35 @@ export function NotificationSettings() {
 
                 <div className="flex items-center gap-2">
                     {isSubscribed && (
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleTestNotification}
-                            disabled={isLoading}
-                            className="text-muted-foreground hover:text-foreground"
-                        >
-                            Test
-                        </Button>
+                        <>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleTestNotification}
+                                disabled={isLoading}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                Local Test
+                            </Button>
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                    setIsLoading(true);
+                                    const { success, error } = await sendTestPushNotification();
+                                    setIsLoading(false);
+                                    if (success) {
+                                        toast.success("Server test sent! Check for notification.");
+                                    } else {
+                                        toast.error(`Server test failed: ${error}`);
+                                    }
+                                }}
+                                disabled={isLoading}
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                Server Test
+                            </Button>
+                        </>
                     )}
 
                     <Button

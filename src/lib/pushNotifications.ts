@@ -188,3 +188,33 @@ export function getNotificationPermissionStatus(): NotificationPermission {
     }
     return Notification.permission;
 }
+
+// Send test push notification via Supabase Edge Function
+export async function sendTestPushNotification(): Promise<{ success: boolean; error?: string }> {
+    try {
+        const { data, error } = await supabase.functions.invoke('send-push-notification', {
+            body: {
+                booking: {
+                    id: 'test-' + Date.now(),
+                    passenger_name: 'Test User',
+                    pickup: 'Server Test Pickup',
+                    dropoff: 'Server Test Dropoff',
+                    price: 500,
+                    vehicle: 'Vito',
+                    status: 'Pending'
+                }
+            }
+        });
+
+        if (error) {
+            console.error('Supabase function error:', error);
+            return { success: false, error: error.message || 'Function invocation failed' };
+        }
+
+        console.log('Test push response:', data);
+        return { success: true };
+    } catch (error) {
+        console.error('Test push failed:', error);
+        return { success: false, error: (error as Error).message };
+    }
+}
