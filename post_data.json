@@ -1,0 +1,10 @@
+{
+    "passenger_name": "Test User",
+    "phone": "1234567890",
+    "pickup": "Casablanca",
+    "vehicle": "Vito",
+    "trip_type": "one_way",
+    "price": 100,
+    "status": "Pending",
+    "pickup_time": "01/01/2026 10:00"
+}

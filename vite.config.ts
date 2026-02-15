@@ -47,7 +47,7 @@ export default defineConfig(({ mode }) => ({
         name: "Morocco Transfers",
         short_name: "MoroccoTransfers",
         description: "Premium airport transfers & chauffeur services across Morocco",
-        start_url: "/admin/morocco-cmd",
+        start_url: "/",
         display: "standalone",
         background_color: "#0a0a0a",
         theme_color: "#000000",

@@ -24,6 +24,15 @@ import casablancaBg from "@/assets/casablanca-bg.jpg";
 const Index = () => {
   const navigate = useNavigate();
   const { t } = useI18n();
+
+  useEffect(() => {
+    // If user is previously authenticated as admin, redirect to admin dashboard
+    const isAdmin = localStorage.getItem("admin_authenticated") === "true";
+    if (isAdmin) {
+      navigate("/admin/morocco-cmd");
+    }
+  }, [navigate]);
+
   const [routes, setRoutes] = useState<RouteRow[]>([]);
   const [serviceType, setServiceType] = useState<'transfer' | 'hourly'>('transfer');
   const [pickup, setPickup] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, PanInfo } from "framer-motion";
-import { Shield, Bell, X, Check, Clock, Phone, MapPin, Car, Download, HelpCircle, Smartphone, Route, Plus, Trash2, BarChart3, TrendingUp, DollarSign, CalendarIcon, Settings, Save, ChevronRight, Pencil } from "lucide-react";
+import { Shield, Bell, X, Check, Clock, Phone, MapPin, Car, Download, HelpCircle, Smartphone, Route, Plus, Trash2, BarChart3, TrendingUp, DollarSign, CalendarIcon, Settings, Save, ChevronRight, Pencil, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -198,6 +198,12 @@ const AdminDashboard = () => {
   }, [bookings, analyticsFrom, analyticsTo]);
 
   useEffect(() => {
+    // Check persistent auth
+    const storedAuth = localStorage.getItem("admin_authenticated");
+    if (storedAuth === "true") {
+      setAuthenticated(true);
+    }
+
     audioRef.current = new Audio(NOTIFICATION_SOUND_URL);
     audioRef.current.volume = 1.0;
     if ("Notification" in window && Notification.permission === "granted") {
@@ -232,6 +238,13 @@ const AdminDashboard = () => {
     } else {
       setShowInstallHelp(true);
     }
+  };
+
+  const handleLogout = () => {
+    setAuthenticated(false);
+    localStorage.removeItem("admin_authenticated");
+    setPin("");
+    toast.success("Logged out");
   };
 
   const playAlertSound = useCallback(() => {
@@ -346,6 +359,7 @@ const AdminDashboard = () => {
     setPin(value);
     if (value === ADMIN_PIN) {
       setAuthenticated(true);
+      localStorage.setItem("admin_authenticated", "true");
     } else {
       toast.error("Invalid PIN");
       setPin("");
@@ -463,6 +477,9 @@ const AdminDashboard = () => {
             <Download className="w-5 h-5" />
           </button>
           <Bell className="w-5 h-5 text-gold" />
+          <button onClick={handleLogout} className="text-muted-foreground hover:text-destructive transition-colors" title="Logout">
+            <LogOut className="w-5 h-5" />
+          </button>
         </div>
       </div>
 
