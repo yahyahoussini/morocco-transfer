@@ -342,6 +342,11 @@ const AdminDashboard = () => {
         playAlertSound();
         sendSystemNotification(newBooking);
         setAlertBooking(newBooking);
+
+        // Push notification to ALL subscribed devices (phones, other browsers)
+        supabase.functions.invoke('send-push-notification', {
+          body: { booking: newBooking }
+        }).catch(err => console.error('Push to other devices failed:', err));
       })
       .on("postgres_changes", { event: "UPDATE", schema: "public", table: "bookings" }, (payload) => {
         const updated = payload.new as Booking;
