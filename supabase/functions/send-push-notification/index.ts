@@ -1,6 +1,11 @@
 import { serve } from 'https://deno.land/std@0.168.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
+const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
 const VAPID_PUBLIC_KEY = Deno.env.get('VAPID_PUBLIC_KEY');
 const VAPID_PRIVATE_KEY = Deno.env.get('VAPID_PRIVATE_KEY');
 const VAPID_SUBJECT = Deno.env.get('VAPID_SUBJECT') || 'mailto:admin@moroccotransfers.com';
@@ -68,13 +73,18 @@ async function sendPushNotification(
 }
 
 serve(async (req) => {
+    // Handle CORS preflight request
+    if (req.method === 'OPTIONS') {
+        return new Response('ok', { headers: corsHeaders });
+    }
+
     try {
         const { booking } = await req.json();
 
         if (!booking) {
             return new Response(JSON.stringify({ error: 'No booking data provided' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
@@ -94,7 +104,7 @@ serve(async (req) => {
             console.error('Failed to fetch subscriptions:', fetchError);
             return new Response(JSON.stringify({ error: 'Failed to fetch subscriptions' }), {
                 status: 500,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
@@ -105,7 +115,7 @@ serve(async (req) => {
                 sent: 0
             }), {
                 status: 200,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
@@ -144,7 +154,7 @@ serve(async (req) => {
             expired: expiredSubscriptions.length
         }), {
             status: 200,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
 
     } catch (error) {
@@ -154,7 +164,7 @@ serve(async (req) => {
             details: (error as Error).message
         }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     }
 });
