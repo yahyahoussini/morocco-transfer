@@ -106,7 +106,7 @@ function SwipeableBookingCard({ booking, onConfirm, onCancel, onTap }: {
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Car className="w-3 h-3" />
-            <span>{booking.vehicle === 'Vito' ? 'Mercedes Vito' : 'Dacia Lodgy'}</span>
+            <span>{booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}</span>
           </div>
           <span className="text-gold font-serif font-bold">{Number(booking.price).toLocaleString()} DH</span>
         </div>
@@ -260,7 +260,7 @@ const AdminDashboard = () => {
 
   const sendSystemNotification = useCallback(async (booking: Booking) => {
     if ("Notification" in window && Notification.permission === "granted") {
-      const vehicleName = booking.vehicle === 'Vito' ? 'Mercedes Vito' : 'Dacia Lodgy';
+      const vehicleName = booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy';
       const route = booking.dropoff ? `${booking.pickup} → ${booking.dropoff}` : `${booking.pickup} (Hourly)`;
       const body = `👤 ${booking.passenger_name}\n💰 ${Number(booking.price).toLocaleString()} DH\n🚗 ${vehicleName}\n📍 ${route}`;
 
@@ -895,7 +895,7 @@ const AdminDashboard = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground text-sm">Pickup Time</span><span className="text-foreground">{selectedBooking.pickup_time}</span></div>
               )}
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Route</span><span className="text-foreground">{selectedBooking.pickup}{selectedBooking.dropoff ? ` → ${selectedBooking.dropoff}` : ''}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground text-sm">Vehicle</span><span className="text-foreground">{selectedBooking.vehicle === 'Vito' ? 'Mercedes Vito' : 'Dacia Lodgy'}</span></div>
+              <div className="flex justify-between"><span className="text-muted-foreground text-sm">Vehicle</span><span className="text-foreground">{selectedBooking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Type</span><span className="text-foreground">{selectedBooking.trip_type.replace('_', ' ')}</span></div>
               {selectedBooking.hours && <div className="flex justify-between"><span className="text-muted-foreground text-sm">Hours</span><span className="text-foreground">{selectedBooking.hours}</span></div>}
               <div className="flex justify-between border-t border-border pt-2"><span className="text-muted-foreground text-sm">Price</span><span className="text-gold font-serif font-bold text-xl">{Number(selectedBooking.price).toLocaleString()} DH</span></div>

@@ -25,7 +25,7 @@ const Confirmation = () => {
   }
 
   const whatsappMessage = encodeURIComponent(
-    `Hello Morocco Transfers!\n\nBooking Ref: ${booking.id.slice(0, 8).toUpperCase()}\nName: ${booking.passenger_name}\nRoute: ${booking.pickup}${booking.dropoff ? ` → ${booking.dropoff}` : ''}\nVehicle: ${booking.vehicle === 'Vito' ? 'Mercedes Vito' : 'Dacia Lodgy'}\nPrice: ${booking.price} DH\n\nI'd like to confirm my booking.`
+    `Hello Morocco Transfers!\n\nBooking Ref: ${booking.id.slice(0, 8).toUpperCase()}\nName: ${booking.passenger_name}\nRoute: ${booking.pickup}${booking.dropoff ? ` → ${booking.dropoff}` : ''}\nVehicle: ${booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}\nPrice: ${booking.price} DH\n\nI'd like to confirm my booking.`
   );
 
   return (
