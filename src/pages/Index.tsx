@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { MapPin, Clock, Car, User, Phone, ChevronRight, Check, CalendarIcon, LocateFixed, Loader2, MessageCircle, Mail, Hotel, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
@@ -38,6 +39,7 @@ const Index = () => {
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
+  const [comment, setComment] = useState('');
   const [roomOrPassengers, setRoomOrPassengers] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -117,6 +119,7 @@ const Index = () => {
     if (!pickupHour) newErrors.pickupHour = t("errTime");
     if (!name.trim()) newErrors.name = t("errName");
     if (phone.length < 8) newErrors.phone = t("errPhone");
+    if (!roomOrPassengers.trim()) newErrors.roomOrPassengers = t("errRoomOrPassengers");
     if (price === null) newErrors.price = t("errPrice");
 
     setErrors(newErrors);
@@ -141,6 +144,7 @@ const Index = () => {
       status: 'Pending',
       email: email.trim() || null,
       room_or_passengers: roomOrPassengers.trim() || null,
+      comment: comment.trim() || null,
     } as any).select().maybeSingle();
 
     setSubmitting(false);
@@ -414,10 +418,11 @@ const Index = () => {
                 <Input
                   placeholder={t("roomOrPassengers")}
                   value={roomOrPassengers}
-                  onChange={(e) => setRoomOrPassengers(e.target.value)}
-                  className="bg-secondary/50 border-border pl-10"
+                  onChange={(e) => { setRoomOrPassengers(e.target.value); setErrors((prev) => ({ ...prev, roomOrPassengers: undefined })); }}
+                  className={cn("bg-secondary/50 border-border pl-10", errors.roomOrPassengers && "border-destructive")}
                 />
               </div>
+              {errors.roomOrPassengers && <p className="text-destructive text-xs mt-1">{errors.roomOrPassengers}</p>}
             </div>
             <div>
               <div className="relative">
@@ -430,6 +435,17 @@ const Index = () => {
                   className="bg-secondary/50 border-border pl-10"
                 />
               </div>
+              <div className="mt-3">
+                <div className="relative">
+                  <Textarea
+                    placeholder={t("commentPlaceholder")}
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    className="bg-secondary/50 border-border min-h-[100px]"
+                  />
+                </div>
+              </div>
+
             </div>
           </div>
 

@@ -61,6 +61,12 @@ const Confirmation = () => {
             <span className="text-muted-foreground text-sm">{t("vehicle")}</span>
             <span className="text-foreground text-sm">{booking.vehicle === 'Vito' ? t("mercedesVito") : t("daciaLodgy")}</span>
           </div>
+          {booking.room_or_passengers && (
+            <div className="flex justify-between">
+              <span className="text-muted-foreground text-sm">{t("roomOrPassengers")}</span>
+              <span className="text-foreground text-sm">{booking.room_or_passengers}</span>
+            </div>
+          )}
           {booking.pickup_time && (
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">{t("pickupTime")}</span>
@@ -71,6 +77,12 @@ const Confirmation = () => {
             <div className="flex justify-between">
               <span className="text-muted-foreground text-sm">{t("duration")}</span>
               <span className="text-foreground text-sm">{booking.hours} hours</span>
+            </div>
+          )}
+          {booking.comment && (
+            <div className="flex flex-col gap-1 mt-2 mb-2 p-2 bg-background/50 rounded-lg">
+              <span className="text-muted-foreground text-xs uppercase tracking-wide">{t("commentLabel")}</span>
+              <p className="text-foreground text-sm italic">"{booking.comment}"</p>
             </div>
           )}
           <div className="flex justify-between border-t border-border pt-2">

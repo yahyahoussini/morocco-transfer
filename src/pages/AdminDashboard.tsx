@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useI18n } from "@/lib/i18n";
 import type { RouteRow } from "@/lib/pricing";
+import { NotificationSettings } from "@/components/NotificationSettings";
+import { registerServiceWorker } from "@/lib/registerServiceWorker";
 
 const ADMIN_PIN = "1234";
 const NOTIFICATION_SOUND_URL = "https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3";
@@ -25,6 +27,7 @@ interface Booking {
   created_at: string;
   passenger_name: string;
   phone: string;
+  email: string | null;
   pickup: string;
   dropoff: string | null;
   vehicle: string;
@@ -32,6 +35,9 @@ interface Booking {
   hours: number | null;
   price: number;
   status: string;
+  room_or_passengers: string | null;
+  pickup_time?: string | null;
+  comment?: string | null;
 }
 
 interface BeforeInstallPromptEvent extends Event {
@@ -90,6 +96,12 @@ function SwipeableBookingCard({ booking, onConfirm, onCancel, onTap }: {
           <MapPin className="w-3 h-3" />
           <span>{booking.pickup}{booking.dropoff ? ` → ${booking.dropoff}` : ''}</span>
         </div>
+        {booking.comment && (
+          <div className="mt-2 p-2 bg-secondary/30 rounded-lg text-xs italic text-muted-foreground flex gap-2">
+            <span className="font-semibold not-italic">Note:</span>
+            "{booking.comment}"
+          </div>
+        )}
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Car className="w-3 h-3" />
@@ -200,10 +212,8 @@ const AdminDashboard = () => {
     };
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
-    // Register custom SW for rich notifications
-    if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {});
-    }
+    // Register service worker for push notifications and PWA
+    registerServiceWorker().catch((err) => console.error("SW registration failed:", err));
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
@@ -227,7 +237,7 @@ const AdminDashboard = () => {
   const playAlertSound = useCallback(() => {
     if (audioRef.current) {
       audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      audioRef.current.play().catch(() => { });
     }
     if ("vibrate" in navigator) {
       navigator.vibrate([200, 100, 200]);
@@ -259,7 +269,7 @@ const AdminDashboard = () => {
             ],
           } as NotificationOptions);
           return;
-        } catch {}
+        } catch { }
       }
 
       // Fallback to basic notification
@@ -301,7 +311,10 @@ const AdminDashboard = () => {
         supabase.from("routes").select("*").order("pickup", { ascending: true }),
         supabase.from("settings").select("*").eq("key", "whatsapp_number").maybeSingle(),
       ]);
-      if (bookingsRes.data) setBookings(bookingsRes.data as Booking[]);
+      if (bookingsRes.data) {
+        console.log("Bookings data:", bookingsRes.data); // Debug: Check if room_or_passengers is present
+        setBookings(bookingsRes.data as Booking[]);
+      }
       if (routesRes.data) setRoutes(routesRes.data as RouteRow[]);
       if (settingsRes.data) setWhatsappNumber((settingsRes.data as any).value);
     };
@@ -483,11 +496,10 @@ const AdminDashboard = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-medium transition-all ${
-              activeTab === tab.id
-                ? 'border-gold bg-gold/10 text-gold'
-                : 'border-border bg-secondary/50 text-muted-foreground hover:border-muted-foreground'
-            }`}
+            className={`flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl border text-xs font-medium transition-all ${activeTab === tab.id
+              ? 'border-gold bg-gold/10 text-gold'
+              : 'border-border bg-secondary/50 text-muted-foreground hover:border-muted-foreground'
+              }`}
           >
             <tab.icon className="w-4 h-4" />
             {tab.label}
@@ -753,9 +765,8 @@ const AdminDashboard = () => {
                     <div key={r.route}>
                       <div className="flex items-center justify-between mb-1">
                         <span className="text-xs text-foreground font-medium flex items-center gap-1.5">
-                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${
-                            i === 0 ? 'bg-gold/20 text-gold' : 'bg-secondary text-muted-foreground'
-                          }`}>{i + 1}</span>
+                          <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${i === 0 ? 'bg-gold/20 text-gold' : 'bg-secondary text-muted-foreground'
+                            }`}>{i + 1}</span>
                           {r.route}
                         </span>
                         <span className="text-xs text-muted-foreground">{r.count} trips</span>
@@ -814,6 +825,12 @@ const AdminDashboard = () => {
               </Button>
             </div>
           </div>
+
+          {/* Push Notifications */}
+          <div className="glass rounded-xl p-4">
+            <Label className="text-muted-foreground text-xs uppercase tracking-wider mb-3 block">Push Notifications</Label>
+            <NotificationSettings />
+          </div>
         </div>
       )}
 
@@ -828,6 +845,21 @@ const AdminDashboard = () => {
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Ref</span><span className="text-gold font-mono">{selectedBooking.id.slice(0, 8).toUpperCase()}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Name</span><span className="text-foreground">{selectedBooking.passenger_name}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Phone</span><span className="text-foreground">{selectedBooking.phone}</span></div>
+              {selectedBooking.email && (
+                <div className="flex justify-between"><span className="text-muted-foreground text-sm">Email</span><span className="text-foreground">{selectedBooking.email}</span></div>
+              )}
+              <div className="flex justify-between"><span className="text-muted-foreground text-sm">Room/Passengers</span><span className="text-foreground font-medium">{selectedBooking.room_or_passengers || '—'}</span></div>
+              {selectedBooking.comment && (
+                <div className="flex flex-col gap-1 pt-1">
+                  <span className="text-muted-foreground text-sm">Comment / Request</span>
+                  <div className="bg-secondary/30 p-2.5 rounded-lg text-sm text-foreground italic border border-border/50">
+                    "{selectedBooking.comment}"
+                  </div>
+                </div>
+              )}
+              {selectedBooking.pickup_time && (
+                <div className="flex justify-between"><span className="text-muted-foreground text-sm">Pickup Time</span><span className="text-foreground">{selectedBooking.pickup_time}</span></div>
+              )}
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Route</span><span className="text-foreground">{selectedBooking.pickup}{selectedBooking.dropoff ? ` → ${selectedBooking.dropoff}` : ''}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Vehicle</span><span className="text-foreground">{selectedBooking.vehicle === 'Vito' ? 'Mercedes Vito' : 'Dacia Lodgy'}</span></div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Type</span><span className="text-foreground">{selectedBooking.trip_type.replace('_', ' ')}</span></div>
