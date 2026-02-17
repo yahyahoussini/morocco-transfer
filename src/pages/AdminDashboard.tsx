@@ -219,6 +219,10 @@ const AdminDashboard = () => {
     audioRef.current.volume = 1.0;
     if ("Notification" in window && Notification.permission === "granted") {
       setNotificationsEnabled(true);
+      // Ensure subscription is active/refreshed on load if permission is already granted
+      if (localStorage.getItem("admin_authenticated") === "true") {
+        subscribeToPushNotifications('admin-device').catch(console.error);
+      }
     }
 
     // Listen for PWA install prompt
@@ -319,6 +323,7 @@ const AdminDashboard = () => {
     const permission = await Notification.requestPermission();
     if (permission === "granted") {
       setNotificationsEnabled(true);
+      await subscribeToPushNotifications('admin-device');
       toast.success("Notifications enabled!");
       new Notification("🔔 Notifications Active", {
         body: "You'll receive instant alerts for every new booking — just like your favorite shopping app!",
