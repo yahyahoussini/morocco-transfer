@@ -412,7 +412,7 @@ const Index = () => {
                 className="mb-6 text-center py-4 rounded-xl bg-gold/5 border border-gold/20"
               >
                 <p className="text-xs text-muted-foreground uppercase tracking-wider mb-1">{t("totalPrice")}</p>
-                <p className="text-4xl font-serif font-bold text-gold">{price.toLocaleString()} DH</p>
+                <p className="text-4xl font-serif font-bold text-gold">{price > 0 ? `${price.toLocaleString()} DH` : t("notAvailable")}</p>
               </motion.div>
             )}
           </AnimatePresence>

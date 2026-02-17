@@ -92,6 +92,7 @@ const translations = {
     confirmDeleteTitle: "Delete Booking?",
     confirmDeleteMsg: "This action cannot be undone.",
     bookingDeleted: "Booking deleted",
+    notAvailable: "Not Available",
   },
   fr: {
     heroTitle1: "Vivez",
@@ -175,6 +176,7 @@ const translations = {
     confirmDeleteTitle: "Supprimer la réservation ?",
     confirmDeleteMsg: "Cette action est irréversible.",
     bookingDeleted: "Réservation supprimée",
+    notAvailable: "Indisponible",
   },
   ar: {
     heroTitle1: "عِش",
@@ -258,6 +260,7 @@ const translations = {
     confirmDeleteTitle: "حذف الحجز؟",
     confirmDeleteMsg: "لا يمكن التراجع عن هذا الإجراء.",
     bookingDeleted: "تم حذف الحجز",
+    notAvailable: "غير متوفر",
   },
 } as const;
 
