@@ -1,0 +1,1 @@
+ALTER TABLE public.bookings ADD COLUMN room_or_passengers text DEFAULT NULL;

@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Morocco Transfers — Premium Airport Transfers & Chauffeur Services</title>
+  <meta name="description"
+    content="Book luxury Mercedes vito de luxe or economy Dacia Lodgy airport transfers across Morocco. Transparent pricing, 24/7 availability, on-time pickup guaranteed." />
+  <meta name="author" content="Morocco Transfers" />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://moroccotransfers.com/" />
+
+  <!-- Favicon -->
+  <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" id="pwa-manifest" />
+
+  <meta name="theme-color" content="#000000" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Morocco Transfers" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Morocco Transfers — Premium Airport Transfers" />
+  <meta property="og:description" content="Luxury airport transfers and chauffeur services across Morocco. Book now." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://moroccotransfers.com/" />
+  <meta property="og:site_name" content="Morocco Transfers" />
+  <meta property="og:locale" content="en_US" />
+  <meta property="og:locale:alternate" content="fr_FR" />
+  <meta property="og:locale:alternate" content="ar_MA" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Morocco Transfers — Premium Airport Transfers" />
+  <meta name="twitter:description" content="Luxury airport transfers and chauffeur services across Morocco." />
+
+  <!-- Preconnect to critical origins -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+  <!-- Font with display=swap for non-blocking load -->
+  <link rel="preload" as="style"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" />
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap"
+    media="print" onload="this.media='all'" />
+  <noscript>
+    <link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" />
+  </noscript>
+
+  <!-- JSON-LD Structured Data -->
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "Morocco Transfers",
+      "description": "Premium airport transfers and chauffeur services across Morocco",
+      "url": "https://moroccotransfers.com",
+      "telephone": "+212600000000",
+      "address": {
+        "@type": "PostalAddress",
+        "addressLocality": "Casablanca",
+        "addressCountry": "MA"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 33.5731,
+        "longitude": -7.5898
+      },
+      "priceRange": "$$",
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "sameAs": []
+    }
+    </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script>
+    // Conditionally load admin manifest for separate PWA installation
+    if (window.location.pathname.startsWith('/admin')) {
+      const manifest = document.getElementById('pwa-manifest');
+      if (manifest) manifest.setAttribute('href', '/manifest-admin.json');
+
+      const themeColor = document.querySelector('meta[name="theme-color"]');
+      if (themeColor) themeColor.setAttribute('content', '#d4af37');
+
+      const appTitle = document.querySelector('meta[name="apple-mobile-web-app-title"]');
+      if (appTitle) appTitle.setAttribute('content', 'Morocco Transfers Admin');
+    }
+  </script>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

@@ -1,0 +1,299 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
+export type Lang = "en" | "fr" | "ar";
+
+const translations = {
+  en: {
+    // Hero
+    heroTitle1: "Experience",
+    heroTitle2: "Premium",
+    heroTitle3: "Travel",
+    heroSubtitle: "Luxury airport transfers & chauffeur services across Morocco",
+    // Booking
+    serviceType: "Service Type",
+    transfer: "Transfer",
+    hourlyService: "Hourly Service",
+    route: "Route",
+    duration: "Duration",
+    pickupLocation: "Pickup location",
+    dropoffLocation: "Dropoff location",
+    oneWay: "One Way",
+    roundTrip: "Round Trip",
+    yourLocation: "Your location (e.g. address, hotel...)",
+    hoursLabel: "hours × 200 DH/hr (Mercedes vito de luxe)",
+    vehicle: "Vehicle",
+    businessClass: "Business Class",
+    economy: "Economy",
+    mercedesVito: "Mercedes vito de luxe",
+    daciaLodgy: "Dacia Lodgy",
+    totalPrice: "Total Price",
+    pickupDateTime: "Pickup Date & Time",
+    selectTime: "Select time",
+    noTimesAvailable: "No times available today",
+    passengerInfo: "Passenger Info",
+    fullName: "Full name",
+    whatsappNumber: "WhatsApp number (e.g. +33 6 12 34 56 78)",
+    emailOptional: "Email address (optional)",
+    roomOrPassengers: "Room number or number of passengers",
+    paymentMethod: "Payment Method",
+    cashOnArrival: "Cash",
+    bookNow: "Book Now",
+    booking: "Booking...",
+    commentLabel: "Comment / Special Request",
+    commentPlaceholder: "Any special requests? (Child seat, extra luggage...)",
+    // Why Choose Us
+    whyChoose1: "Why",
+    whyChoose2: "Choose Us",
+    noHiddenCharges: "No Hidden Charges",
+    noHiddenChargesDesc: "Transparent pricing with no surprises",
+    onTimePickup: "On-Time Pickup",
+    onTimePickupDesc: "Punctual service, every single time",
+    cleanVehicles: "Clean Vehicles",
+    cleanVehiclesDesc: "Spotless, well-maintained fleet",
+    hoursReady: "24 Hours Ready",
+    hoursReadyDesc: "Available around the clock",
+    // Confirmation
+    bookingConfirmed: "Booking Confirmed!",
+    transferReserved: "Your transfer has been reserved",
+    reference: "Reference",
+    pickupTime: "Pickup Time",
+    total: "Total",
+    contactWhatsApp: "Contact us on WhatsApp",
+    makeAnother: "Make another booking",
+    // Errors
+    errPickup: "Select a pickup location",
+    errDropoff: "Select a dropoff location",
+    errLocation: "Enter your location",
+    errTime: "Select a pickup time",
+    errName: "Enter your name",
+    errPhone: "Enter a valid WhatsApp number with country code",
+    errRoomOrPassengers: "Room number or passengers is required",
+    errPrice: "Unable to calculate price for this route",
+    errFillAll: "Please fill in all required fields",
+    errBookingFailed: "Booking failed. Please try again.",
+    errGeoNotSupported: "Geolocation is not supported by your browser",
+    errGeoFailed: "Unable to get your location. Please allow location access or enter manually.",
+    infoOutsideCasa: "You appear to be outside Casablanca. Our team will contact you to confirm availability.",
+    // 404
+    pageNotFound: "Oops! Page not found",
+    returnHome: "Return to Home",
+    // Admin (keep English for admin)
+    adminAccess: "Admin Access",
+    enterPin: "Enter your 4-digit PIN",
+    commandCenter: "Command Center",
+    bookings: "Bookings",
+    routes: "Routes",
+    analytics: "Analytics",
+    deleteBooking: "Delete",
+    confirmDeleteTitle: "Delete Booking?",
+    confirmDeleteMsg: "This action cannot be undone.",
+    bookingDeleted: "Booking deleted",
+  },
+  fr: {
+    heroTitle1: "Vivez",
+    heroTitle2: "le Luxe",
+    heroTitle3: "du Voyage",
+    heroSubtitle: "Transferts aéroport & services de chauffeur de luxe au Maroc",
+    serviceType: "Type de service",
+    transfer: "Transfert",
+    hourlyService: "Mise à disposition",
+    route: "Itinéraire",
+    duration: "Durée",
+    pickupLocation: "Lieu de prise en charge",
+    dropoffLocation: "Lieu de dépose",
+    oneWay: "Aller simple",
+    roundTrip: "Aller-retour",
+    yourLocation: "Votre adresse (ex. hôtel, adresse...)",
+    hoursLabel: "heures × 200 DH/h (Mercedes vito de luxe)",
+    vehicle: "Véhicule",
+    businessClass: "Classe Affaires",
+    economy: "Économique",
+    mercedesVito: "Mercedes vito de luxe",
+    daciaLodgy: "Dacia Lodgy",
+    totalPrice: "Prix total",
+    pickupDateTime: "Date & heure de prise en charge",
+    selectTime: "Choisir l'heure",
+    noTimesAvailable: "Pas d'horaires disponibles aujourd'hui",
+    passengerInfo: "Informations passager",
+    fullName: "Nom complet",
+    whatsappNumber: "Numéro WhatsApp (ex. +33 6 12 34 56 78)",
+    emailOptional: "Adresse email (optionnel)",
+    roomOrPassengers: "Numéro de chambre ou nombre de passagers",
+    paymentMethod: "Mode de paiement",
+    cashOnArrival: "Cash",
+    bookNow: "Réserver",
+    booking: "Réservation...",
+    commentLabel: "Commentaire / Demande spéciale",
+    commentPlaceholder: "Des demandes spéciales ? (Siège bébé, bagages supplémentaires...)",
+    whyChoose1: "Pourquoi",
+    whyChoose2: "Nous Choisir",
+    noHiddenCharges: "Pas de frais cachés",
+    noHiddenChargesDesc: "Tarification transparente sans surprises",
+    onTimePickup: "Ponctualité",
+    onTimePickupDesc: "Service ponctuel, à chaque fois",
+    cleanVehicles: "Véhicules propres",
+    cleanVehiclesDesc: "Flotte impeccable et bien entretenue",
+    hoursReady: "24h/24",
+    hoursReadyDesc: "Disponible à toute heure",
+    bookingConfirmed: "Réservation confirmée !",
+    transferReserved: "Votre transfert a été réservé",
+    reference: "Référence",
+    pickupTime: "Heure de prise en charge",
+    total: "Total",
+    contactWhatsApp: "Contactez-nous sur WhatsApp",
+    makeAnother: "Faire une autre réservation",
+    errPickup: "Sélectionnez un lieu de prise en charge",
+    errDropoff: "Sélectionnez un lieu de dépose",
+    errLocation: "Entrez votre emplacement",
+    errTime: "Sélectionnez une heure",
+    errName: "Entrez votre nom",
+    errPhone: "Entrez un numéro WhatsApp valide avec indicatif",
+    errRoomOrPassengers: "Le numéro de chambre ou le nombre de passagers est requis",
+    errPrice: "Impossible de calculer le prix pour cet itinéraire",
+    errFillAll: "Veuillez remplir tous les champs obligatoires",
+    errBookingFailed: "Échec de la réservation. Veuillez réessayer.",
+    errGeoNotSupported: "La géolocalisation n'est pas supportée",
+    errGeoFailed: "Impossible d'obtenir votre position. Autorisez l'accès ou entrez manuellement.",
+    infoOutsideCasa: "Vous semblez être hors de Casablanca. Notre équipe vous contactera.",
+    pageNotFound: "Page introuvable",
+    returnHome: "Retour à l'accueil",
+    adminAccess: "Accès Admin",
+    enterPin: "Entrez votre code PIN à 4 chiffres",
+    commandCenter: "Centre de commande",
+    bookings: "Réservations",
+    routes: "Itinéraires",
+    analytics: "Analyses",
+    deleteBooking: "Supprimer",
+    confirmDeleteTitle: "Supprimer la réservation ?",
+    confirmDeleteMsg: "Cette action est irréversible.",
+    bookingDeleted: "Réservation supprimée",
+  },
+  ar: {
+    heroTitle1: "عِش",
+    heroTitle2: "الفخامة",
+    heroTitle3: "في السفر",
+    heroSubtitle: "خدمات نقل فاخرة من وإلى المطار عبر المغرب",
+    serviceType: "نوع الخدمة",
+    transfer: "نقل",
+    hourlyService: "خدمة بالساعة",
+    route: "المسار",
+    duration: "المدة",
+    pickupLocation: "نقطة الانطلاق",
+    dropoffLocation: "نقطة الوصول",
+    oneWay: "ذهاب فقط",
+    roundTrip: "ذهاب وإياب",
+    yourLocation: "موقعك (مثال: فندق، عنوان...)",
+    hoursLabel: "ساعات × 200 درهم/ساعة (مرسيدس فيتو)",
+    vehicle: "المركبة",
+    businessClass: "درجة رجال الأعمال",
+    economy: "اقتصادي",
+    mercedesVito: "مرسيدس فيتو",
+    daciaLodgy: "داسيا لودجي",
+    totalPrice: "السعر الإجمالي",
+    pickupDateTime: "تاريخ ووقت الانطلاق",
+    selectTime: "اختر الوقت",
+    noTimesAvailable: "لا توجد أوقات متاحة اليوم",
+    passengerInfo: "معلومات المسافر",
+    fullName: "الاسم الكامل",
+    whatsappNumber: "رقم الواتساب (مثال: 212600000000+)",
+    emailOptional: "البريد الإلكتروني (اختياري)",
+    roomOrPassengers: "رقم الغرفة أو عدد المسافرين",
+    paymentMethod: "طريقة الدفع",
+    cashOnArrival: "Cash",
+    bookNow: "احجز الآن",
+    booking: "جاري الحجز...",
+    commentLabel: "تعليق / طلب خاص",
+    commentPlaceholder: "أي طلبات خاصة؟ (مقعد طفل، أمتعة إضافية...)",
+    whyChoose1: "لماذا",
+    whyChoose2: "تختارنا",
+    noHiddenCharges: "بدون رسوم خفية",
+    noHiddenChargesDesc: "أسعار شفافة بدون مفاجآت",
+    onTimePickup: "التقاط في الوقت",
+    onTimePickupDesc: "خدمة دقيقة في كل مرة",
+    cleanVehicles: "مركبات نظيفة",
+    cleanVehiclesDesc: "أسطول نظيف وصيانة ممتازة",
+    hoursReady: "متاح 24 ساعة",
+    hoursReadyDesc: "متاح على مدار الساعة",
+    bookingConfirmed: "!تم تأكيد الحجز",
+    transferReserved: "تم حجز رحلتك بنجاح",
+    reference: "المرجع",
+    pickupTime: "وقت الانطلاق",
+    total: "المجموع",
+    contactWhatsApp: "تواصل معنا عبر واتساب",
+    makeAnother: "إجراء حجز آخر",
+    errPickup: "اختر نقطة الانطلاق",
+    errDropoff: "اختر نقطة الوصول",
+    errLocation: "أدخل موقعك",
+    errTime: "اختر وقت الانطلاق",
+    errName: "أدخل اسمك",
+    errPhone: "أدخل رقم واتساب صالح مع رمز البلد",
+    errRoomOrPassengers: "رقم الغرفة أو عدد المسافرين مطلوب",
+    errPrice: "تعذر حساب السعر لهذا المسار",
+    errFillAll: "يرجى ملء جميع الحقول المطلوبة",
+    errBookingFailed: "فشل الحجز. يرجى المحاولة مرة أخرى.",
+    errGeoNotSupported: "تحديد الموقع غير مدعوم في متصفحك",
+    errGeoFailed: "تعذر تحديد موقعك. يرجى السماح بالوصول أو الإدخال يدوياً.",
+    infoOutsideCasa: "يبدو أنك خارج الدار البيضاء. سيتصل بك فريقنا.",
+    pageNotFound: "الصفحة غير موجودة",
+    returnHome: "العودة للرئيسية",
+    adminAccess: "دخول المسؤول",
+    enterPin: "أدخل رمز PIN المكون من 4 أرقام",
+    commandCenter: "مركز القيادة",
+    bookings: "الحجوزات",
+    routes: "المسارات",
+    analytics: "التحليلات",
+    deleteBooking: "حذف",
+    confirmDeleteTitle: "حذف الحجز؟",
+    confirmDeleteMsg: "لا يمكن التراجع عن هذا الإجراء.",
+    bookingDeleted: "تم حذف الحجز",
+  },
+} as const;
+
+type TranslationKeys = keyof typeof translations.en;
+
+interface I18nContextType {
+  lang: Lang;
+  setLang: (lang: Lang) => void;
+  t: (key: TranslationKeys) => string;
+  isRTL: boolean;
+}
+
+const I18nContext = createContext<I18nContextType>({
+  lang: "en",
+  setLang: () => { },
+  t: (key) => key,
+  isRTL: false,
+});
+
+function detectLang(): Lang {
+  const saved = localStorage.getItem("lang") as Lang | null;
+  if (saved && ["en", "fr", "ar"].includes(saved)) return saved;
+  const browserLang = (navigator.language || "").toLowerCase();
+  if (browserLang.startsWith("ar")) return "ar";
+  if (browserLang.startsWith("fr")) return "fr";
+  return "en";
+}
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [lang, setLang] = useState<Lang>(detectLang);
+
+  const isRTL = lang === "ar";
+
+  useEffect(() => {
+    localStorage.setItem("lang", lang);
+    document.documentElement.dir = isRTL ? "rtl" : "ltr";
+    document.documentElement.lang = lang;
+  }, [lang, isRTL]);
+
+  const t = (key: TranslationKeys): string => {
+    return translations[lang]?.[key] ?? translations.en[key] ?? key;
+  };
+
+  return (
+    <I18nContext.Provider value={{ lang, setLang, t, isRTL }}>
+      {children}
+    </I18nContext.Provider>
+  );
+}
+
+export const useI18n = () => useContext(I18nContext);
