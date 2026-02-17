@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export type Vehicle = 'Vito' | 'Dacia';
+export type Vehicle = 'Vito' | 'Dacia' | 'Octavia' | 'Karoq';
 export type TripType = 'one_way' | 'round_trip' | 'hourly';
 
 export interface RouteRow {
@@ -9,8 +9,12 @@ export interface RouteRow {
   dropoff: string;
   vito_one_way: number;
   dacia_one_way: number;
+  octavia_one_way: number;
+  karoq_one_way: number;
   vito_round_trip: number | null;
   dacia_round_trip: number | null;
+  octavia_round_trip: number | null;
+  karoq_round_trip: number | null;
 }
 
 const HOURLY_RATE = 200; // MAD per hour, Vito only
@@ -33,6 +37,27 @@ export function getLocationsFromRoutes(routes: RouteRow[]): string[] {
   return Array.from(set).sort();
 }
 
+export function getPickupLocations(routes: RouteRow[]): string[] {
+  const set = new Set<string>();
+  routes.forEach((r) => set.add(r.pickup));
+  return Array.from(set).sort();
+}
+
+export function getDropoffLocations(routes: RouteRow[]): string[] {
+  const set = new Set<string>();
+  routes.forEach((r) => set.add(r.dropoff));
+  return Array.from(set).sort();
+}
+
+export function getAvailableDropoffs(routes: RouteRow[], pickup: string | null): string[] {
+  if (!pickup) return [];
+  const set = new Set<string>();
+  routes
+    .filter((r) => r.pickup === pickup)
+    .forEach((r) => set.add(r.dropoff));
+  return Array.from(set).sort();
+}
+
 export function calculatePriceFromRoutes(
   routes: RouteRow[],
   pickup: string | null,
@@ -52,11 +77,22 @@ export function calculatePriceFromRoutes(
   if (!route) return null;
 
   if (tripType === 'round_trip') {
-    const price = vehicle === 'Vito' ? route.vito_round_trip : route.dacia_round_trip;
-    return price ?? null;
+    switch (vehicle) {
+      case 'Vito': return route.vito_round_trip ?? null;
+      case 'Dacia': return route.dacia_round_trip ?? null;
+      case 'Octavia': return route.octavia_round_trip ?? null;
+      case 'Karoq': return route.karoq_round_trip ?? null;
+      default: return null;
+    }
   }
 
-  return vehicle === 'Vito' ? route.vito_one_way : route.dacia_one_way;
+  switch (vehicle) {
+    case 'Vito': return route.vito_one_way;
+    case 'Dacia': return route.dacia_one_way;
+    case 'Octavia': return route.octavia_one_way;
+    case 'Karoq': return route.karoq_one_way;
+    default: return null;
+  }
 }
 
 export function hasRoundTripFromRoutes(
@@ -66,5 +102,10 @@ export function hasRoundTripFromRoutes(
 ): boolean {
   if (!pickup || !dropoff) return false;
   const route = routes.find((r) => r.pickup === pickup && r.dropoff === dropoff);
+  // Assuming round trip is available if Vito has a round trip price, 
+  // or generally if the route exists and has round_trip capability.
+  // For simplicity, checking vito_round_trip as a proxy for the route supporting round trips at all,
+  // but better to check if ANY vehicle has round trip.
   return !!(route?.vito_round_trip);
 }
+

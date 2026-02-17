@@ -1,6 +1,6 @@
-import { useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MapPin, Clock, Car, User, Phone, ChevronRight, Check, CalendarIcon, LocateFixed, Loader2, MessageCircle, Mail, Hotel, Banknote } from "lucide-react";
+import { MapPin, Clock, Car, User, Phone, ChevronRight, ChevronDown, Check, CalendarIcon, LocateFixed, Loader2, MessageCircle, Mail, Hotel, Banknote, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,10 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchRoutes, getLocationsFromRoutes, calculatePriceFromRoutes, hasRoundTripFromRoutes, type RouteRow, type Vehicle, type TripType } from "@/lib/pricing";
+import { fetchRoutes, getLocationsFromRoutes, getPickupLocations, getDropoffLocations, getAvailableDropoffs, calculatePriceFromRoutes, hasRoundTripFromRoutes, type RouteRow, type Vehicle, type TripType } from "@/lib/pricing";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Shield, Clock3, Sparkles, PhoneCall } from "lucide-react";
@@ -19,6 +20,8 @@ import { useI18n } from "@/lib/i18n";
 import heroBg from "@/assets/hero-bg.jpg";
 import vitoImg from "@/assets/vito.jpg";
 import lodgyImg from "@/assets/lodgy.jpg";
+import octaviaImg from "@/assets/Skoda-Octavia.jpg";
+import karoqImg from "@/assets/skoda-karoq.jpg";
 import casablancaBg from "@/assets/casablanca-bg.jpg";
 
 const Index = () => {
@@ -53,11 +56,17 @@ const Index = () => {
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  const [openPickup, setOpenPickup] = useState(false);
+  const [showPickupSearch, setShowPickupSearch] = useState(false);
+  const pickupTriggerRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     fetchRoutes().then(setRoutes);
   }, []);
 
   const locations = useMemo(() => getLocationsFromRoutes(routes), [routes]);
+  const pickupLocations = useMemo(() => getPickupLocations(routes), [routes]);
+  const availableDropoffs = useMemo(() => getAvailableDropoffs(routes, pickup), [routes, pickup]);
 
   const today = useMemo(() => {
     const d = new Date();
@@ -224,19 +233,88 @@ const Index = () => {
             {serviceType === 'transfer' ? (
               <div className="space-y-3">
                 <div>
-                  <Select value={pickup ?? ''} onValueChange={(v) => { setPickup(v); setErrors((prev) => ({ ...prev, pickup: undefined })); }}>
-                    <SelectTrigger className={cn("bg-secondary/50 border-border", errors.pickup && "border-destructive")}><SelectValue placeholder={t("pickupLocation")} /></SelectTrigger>
-                    <SelectContent className="bg-popover border-border">
-                      {locations.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
+                  <Popover open={openPickup} onOpenChange={setOpenPickup}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        ref={pickupTriggerRef}
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={openPickup}
+                        className={cn(
+                          "w-full justify-between bg-secondary/50 border-border font-normal hover:bg-secondary/50",
+                          !pickup && "text-muted-foreground",
+                          errors.pickup && "border-destructive"
+                        )}
+                      >
+                        {pickup || t("pickupLocation")}
+                        <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 bg-popover border-border" style={{ width: pickupTriggerRef.current?.offsetWidth }}>
+                      <Command>
+                        <div className="flex items-center border-b border-border px-3">
+                          {showPickupSearch ? (
+                            <CommandInput
+                              placeholder="Search location..."
+                              className="h-9 border-none focus:ring-0"
+                              autoFocus
+                              onBlur={() => { if (!pickup) setShowPickupSearch(false); }} // Optional: hide on blur if empty? No, keep it simple.
+                            />
+                          ) : (
+                            <div className="flex items-center justify-between w-full h-9 py-2">
+                              <span className="text-sm text-muted-foreground font-medium pl-1">{t("pickupLocation")}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => setShowPickupSearch(true)}
+                                className="h-6 w-6 p-0 hover:bg-secondary"
+                              >
+                                <Search className="h-4 w-4 text-muted-foreground" />
+                              </Button>
+                            </div>
+                          )}
+                        </div>
+                        <CommandList>
+                          <CommandEmpty>No location found.</CommandEmpty>
+                          <CommandGroup>
+                            {pickupLocations.map((l) => (
+                              <CommandItem
+                                key={l}
+                                value={l}
+                                onSelect={(currentValue) => {
+                                  // CommandItem usually downcases the value for search, so currentValue might be lowercase.
+                                  // We want to set the actual location string.
+                                  // But wait, our locations are proper case.
+                                  // We should find the matching location from the list or use currentValue if it matches perfectly (ignoring case).
+                                  // However, pricing dependency relies on exact string match.
+                                  // Better to use the 'l' from the map closure.
+                                  setPickup(l);
+                                  setErrors((prev) => ({ ...prev, pickup: undefined }));
+                                  setOpenPickup(false);
+                                  setShowPickupSearch(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    pickup === l ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {l}
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   {errors.pickup && <p className="text-destructive text-xs mt-1">{errors.pickup}</p>}
                 </div>
                 <div>
                   <Select value={dropoff ?? ''} onValueChange={(v) => { setDropoff(v); setErrors((prev) => ({ ...prev, dropoff: undefined })); }}>
                     <SelectTrigger className={cn("bg-secondary/50 border-border", errors.dropoff && "border-destructive")}><SelectValue placeholder={t("dropoffLocation")} /></SelectTrigger>
                     <SelectContent className="bg-popover border-border">
-                      {locations.filter((l) => l !== pickup).map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
+                      {availableDropoffs.map((l) => <SelectItem key={l} value={l}>{l}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   {errors.dropoff && <p className="text-destructive text-xs mt-1">{errors.dropoff}</p>}
@@ -301,6 +379,8 @@ const Index = () => {
                 {([
                   { id: 'Vito' as Vehicle, label: t("businessClass"), sub: t("mercedesVito"), img: vitoImg },
                   { id: 'Dacia' as Vehicle, label: t("economy"), sub: t("daciaLodgy"), img: lodgyImg },
+                  { id: 'Octavia' as Vehicle, label: t("comfort"), sub: t("skodaOctavia"), img: octaviaImg },
+                  { id: 'Karoq' as Vehicle, label: t("suv"), sub: t("skodaKaroq"), img: karoqImg },
                 ]).map((v) => (
                   <button
                     key={v.id}

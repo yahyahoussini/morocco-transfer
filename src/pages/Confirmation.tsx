@@ -25,7 +25,7 @@ const Confirmation = () => {
   }
 
   const whatsappMessage = encodeURIComponent(
-    `Hello Morocco Transfers!\n\nBooking Ref: ${booking.id.slice(0, 8).toUpperCase()}\nName: ${booking.passenger_name}\nRoute: ${booking.pickup}${booking.dropoff ? ` → ${booking.dropoff}` : ''}\nVehicle: ${booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}\nPrice: ${booking.price} DH\n\nI'd like to confirm my booking.`
+    `Hello Morocco Transfers!\n\nBooking Ref: ${booking.id.slice(0, 8).toUpperCase()}\nName: ${booking.passenger_name}\nRoute: ${booking.pickup}${booking.dropoff ? ` → ${booking.dropoff}` : ''}\nVehicle: ${booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : booking.vehicle === 'Dacia' ? 'Dacia Lodgy' : booking.vehicle === 'Octavia' ? 'Skoda Octavia' : booking.vehicle === 'Karoq' ? 'Skoda Karoq' : booking.vehicle}\nPrice: ${booking.price} DH\n\nI'd like to confirm my booking.`
   );
 
   return (
@@ -59,7 +59,12 @@ const Confirmation = () => {
           </div>
           <div className="flex justify-between">
             <span className="text-muted-foreground text-sm">{t("vehicle")}</span>
-            <span className="text-foreground text-sm">{booking.vehicle === 'Vito' ? t("mercedesVito") : t("daciaLodgy")}</span>
+            <span className="text-foreground text-sm">
+              {booking.vehicle === 'Vito' ? t("mercedesVito") :
+                booking.vehicle === 'Dacia' ? t("daciaLodgy") :
+                  booking.vehicle === 'Octavia' ? t("skodaOctavia") :
+                    booking.vehicle === 'Karoq' ? t("skodaKaroq") : booking.vehicle}
+            </span>
           </div>
           {booking.room_or_passengers && (
             <div className="flex justify-between">

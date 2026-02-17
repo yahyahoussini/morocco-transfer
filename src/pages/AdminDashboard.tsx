@@ -58,6 +58,7 @@ function SwipeableBookingCard({ booking, onConfirm, onCancel, onTap }: {
   onCancel: () => void;
   onTap: () => void;
 }) {
+  const { t } = useI18n();
   const x = useMotionValue(0);
   const bgLeft = useTransform(x, [0, 100], ["rgba(16,185,129,0)", "rgba(16,185,129,0.2)"]);
   const bgRight = useTransform(x, [-100, 0], ["rgba(239,68,68,0.2)", "rgba(239,68,68,0)"]);
@@ -106,12 +107,17 @@ function SwipeableBookingCard({ booking, onConfirm, onCancel, onTap }: {
         <div className="flex items-center justify-between mt-2">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <Car className="w-3 h-3" />
-            <span>{booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}</span>
+            <span>
+              {booking.vehicle === 'Vito' ? t('mercedesVito') :
+                booking.vehicle === 'Dacia' ? t('daciaLodgy') :
+                  booking.vehicle === 'Octavia' ? t('skodaOctavia') :
+                    booking.vehicle === 'Karoq' ? t('skodaKaroq') : booking.vehicle}
+            </span>
           </div>
           <span className="text-gold font-serif font-bold">{Number(booking.price).toLocaleString()} DH</span>
         </div>
-      </motion.div>
-    </div>
+      </motion.div >
+    </div >
   );
 }
 
@@ -138,11 +144,15 @@ const AdminDashboard = () => {
   const [routes, setRoutes] = useState<RouteRow[]>([]);
   const [showAddRoute, setShowAddRoute] = useState(false);
   const [editingRouteId, setEditingRouteId] = useState<string | null>(null);
-  const [editRoute, setEditRoute] = useState({ pickup: '', dropoff: '', vito_one_way: '', dacia_one_way: '', vito_round_trip: '', dacia_round_trip: '' });
+  const [editRoute, setEditRoute] = useState({
+    pickup: '', dropoff: '',
+    vito_one_way: '', dacia_one_way: '', octavia_one_way: '', karoq_one_way: '',
+    vito_round_trip: '', dacia_round_trip: '', octavia_round_trip: '', karoq_round_trip: ''
+  });
   const [newRoute, setNewRoute] = useState({
     pickup: '', dropoff: '',
-    vito_one_way: '', dacia_one_way: '',
-    vito_round_trip: '', dacia_round_trip: '',
+    vito_one_way: '', dacia_one_way: '', octavia_one_way: '', karoq_one_way: '',
+    vito_round_trip: '', dacia_round_trip: '', octavia_round_trip: '', karoq_round_trip: '',
   });
 
   // Analytics date range
@@ -260,7 +270,10 @@ const AdminDashboard = () => {
 
   const sendSystemNotification = useCallback(async (booking: Booking) => {
     if ("Notification" in window && Notification.permission === "granted") {
-      const vehicleName = booking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy';
+      const vehicleName = booking.vehicle === 'Vito' ? t('mercedesVito') :
+        booking.vehicle === 'Dacia' ? t('daciaLodgy') :
+          booking.vehicle === 'Octavia' ? t('skodaOctavia') :
+            booking.vehicle === 'Karoq' ? t('skodaKaroq') : booking.vehicle;
       const route = booking.dropoff ? `${booking.pickup} → ${booking.dropoff}` : `${booking.pickup} (Hourly)`;
       const body = `👤 ${booking.passenger_name}\n💰 ${Number(booking.price).toLocaleString()} DH\n🚗 ${vehicleName}\n📍 ${route}`;
 
@@ -399,7 +412,7 @@ const AdminDashboard = () => {
 
   const addRoute = async () => {
     if (!newRoute.pickup.trim() || !newRoute.dropoff.trim() || !newRoute.vito_one_way || !newRoute.dacia_one_way) {
-      toast.error("Fill in pickup, dropoff, and one-way prices");
+      toast.error("Fill in pickup, dropoff, and at least Vito/Dacia prices");
       return;
     }
     const payload = {
@@ -407,8 +420,12 @@ const AdminDashboard = () => {
       dropoff: newRoute.dropoff.trim(),
       vito_one_way: Number(newRoute.vito_one_way),
       dacia_one_way: Number(newRoute.dacia_one_way),
+      octavia_one_way: Number(newRoute.octavia_one_way || 0),
+      karoq_one_way: Number(newRoute.karoq_one_way || 0),
       vito_round_trip: newRoute.vito_round_trip ? Number(newRoute.vito_round_trip) : null,
       dacia_round_trip: newRoute.dacia_round_trip ? Number(newRoute.dacia_round_trip) : null,
+      octavia_round_trip: newRoute.octavia_round_trip ? Number(newRoute.octavia_round_trip) : null,
+      karoq_round_trip: newRoute.karoq_round_trip ? Number(newRoute.karoq_round_trip) : null,
     };
     const { data, error } = await supabase.from("routes").insert(payload as any).select().maybeSingle();
     if (error) {
@@ -416,7 +433,11 @@ const AdminDashboard = () => {
       return;
     }
     if (data) setRoutes((prev) => [...prev, data as RouteRow]);
-    setNewRoute({ pickup: '', dropoff: '', vito_one_way: '', dacia_one_way: '', vito_round_trip: '', dacia_round_trip: '' });
+    setNewRoute({
+      pickup: '', dropoff: '',
+      vito_one_way: '', dacia_one_way: '', octavia_one_way: '', karoq_one_way: '',
+      vito_round_trip: '', dacia_round_trip: '', octavia_round_trip: '', karoq_round_trip: ''
+    });
     setShowAddRoute(false);
     toast.success("Route added!");
   };
@@ -434,8 +455,12 @@ const AdminDashboard = () => {
       dropoff: route.dropoff,
       vito_one_way: String(route.vito_one_way),
       dacia_one_way: String(route.dacia_one_way),
+      octavia_one_way: String(route.octavia_one_way || 0),
+      karoq_one_way: String(route.karoq_one_way || 0),
       vito_round_trip: route.vito_round_trip ? String(route.vito_round_trip) : '',
       dacia_round_trip: route.dacia_round_trip ? String(route.dacia_round_trip) : '',
+      octavia_round_trip: route.octavia_round_trip ? String(route.octavia_round_trip) : '',
+      karoq_round_trip: route.karoq_round_trip ? String(route.karoq_round_trip) : '',
     });
   };
 
@@ -449,8 +474,12 @@ const AdminDashboard = () => {
       dropoff: editRoute.dropoff.trim(),
       vito_one_way: Number(editRoute.vito_one_way),
       dacia_one_way: Number(editRoute.dacia_one_way),
+      octavia_one_way: Number(editRoute.octavia_one_way),
+      karoq_one_way: Number(editRoute.karoq_one_way),
       vito_round_trip: editRoute.vito_round_trip ? Number(editRoute.vito_round_trip) : null,
       dacia_round_trip: editRoute.dacia_round_trip ? Number(editRoute.dacia_round_trip) : null,
+      octavia_round_trip: editRoute.octavia_round_trip ? Number(editRoute.octavia_round_trip) : null,
+      karoq_round_trip: editRoute.karoq_round_trip ? Number(editRoute.karoq_round_trip) : null,
     };
     const { error } = await supabase.from("routes").update(payload as any).eq("id", editingRouteId);
     if (error) { toast.error("Failed to update route"); return; }
@@ -624,20 +653,42 @@ const AdminDashboard = () => {
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Vito One-Way</Label>
+                      <Label className="text-[10px] text-muted-foreground">Vito 1-Way</Label>
                       <Input value={editRoute.vito_one_way} onChange={(e) => setEditRoute(p => ({ ...p, vito_one_way: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" />
                     </div>
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Lodgy One-Way</Label>
+                      <Label className="text-[10px] text-muted-foreground">Vito R-Trip</Label>
+                      <Input value={editRoute.vito_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, vito_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Lodgy 1-Way</Label>
                       <Input value={editRoute.dacia_one_way} onChange={(e) => setEditRoute(p => ({ ...p, dacia_one_way: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" />
                     </div>
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Vito Round-Trip</Label>
-                      <Input value={editRoute.vito_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, vito_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
+                      <Label className="text-[10px] text-muted-foreground">Lodgy R-Trip</Label>
+                      <Input value={editRoute.dacia_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, dacia_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Octavia 1-Way</Label>
+                      <Input value={editRoute.octavia_one_way} onChange={(e) => setEditRoute(p => ({ ...p, octavia_one_way: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" />
                     </div>
                     <div>
-                      <Label className="text-[10px] text-muted-foreground">Lodgy Round-Trip</Label>
-                      <Input value={editRoute.dacia_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, dacia_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
+                      <Label className="text-[10px] text-muted-foreground">Octavia R-Trip</Label>
+                      <Input value={editRoute.octavia_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, octavia_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Karoq 1-Way</Label>
+                      <Input value={editRoute.karoq_one_way} onChange={(e) => setEditRoute(p => ({ ...p, karoq_one_way: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" />
+                    </div>
+                    <div>
+                      <Label className="text-[10px] text-muted-foreground">Karoq R-Trip</Label>
+                      <Input value={editRoute.karoq_round_trip} onChange={(e) => setEditRoute(p => ({ ...p, karoq_round_trip: e.target.value }))} className="bg-secondary/50 border-border text-xs h-8" type="number" placeholder="Optional" />
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -658,6 +709,14 @@ const AdminDashboard = () => {
                   <div>
                     <span className="text-foreground font-medium">Lodgy:</span> {Number(route.dacia_one_way).toLocaleString()} DH
                     {route.dacia_round_trip && <span className="text-gold"> / {Number(route.dacia_round_trip).toLocaleString()} RT</span>}
+                  </div>
+                  <div>
+                    <span className="text-foreground font-medium">Octavia:</span> {Number(route.octavia_one_way).toLocaleString()} DH
+                    {route.octavia_round_trip && <span className="text-gold"> / {Number(route.octavia_round_trip).toLocaleString()} RT</span>}
+                  </div>
+                  <div>
+                    <span className="text-foreground font-medium">Karoq:</span> {Number(route.karoq_one_way).toLocaleString()} DH
+                    {route.karoq_round_trip && <span className="text-gold"> / {Number(route.karoq_round_trip).toLocaleString()} RT</span>}
                   </div>
                 </div>
               )}
@@ -895,7 +954,15 @@ const AdminDashboard = () => {
                 <div className="flex justify-between"><span className="text-muted-foreground text-sm">Pickup Time</span><span className="text-foreground">{selectedBooking.pickup_time}</span></div>
               )}
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Route</span><span className="text-foreground">{selectedBooking.pickup}{selectedBooking.dropoff ? ` → ${selectedBooking.dropoff}` : ''}</span></div>
-              <div className="flex justify-between"><span className="text-muted-foreground text-sm">Vehicle</span><span className="text-foreground">{selectedBooking.vehicle === 'Vito' ? 'Mercedes vito de luxe' : 'Dacia Lodgy'}</span></div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground text-sm">Vehicle</span>
+                <span className="text-foreground">
+                  {selectedBooking.vehicle === 'Vito' ? t('mercedesVito') :
+                    selectedBooking.vehicle === 'Dacia' ? t('daciaLodgy') :
+                      selectedBooking.vehicle === 'Octavia' ? t('skodaOctavia') :
+                        selectedBooking.vehicle === 'Karoq' ? t('skodaKaroq') : selectedBooking.vehicle}
+                </span>
+              </div>
               <div className="flex justify-between"><span className="text-muted-foreground text-sm">Type</span><span className="text-foreground">{selectedBooking.trip_type.replace('_', ' ')}</span></div>
               {selectedBooking.hours && <div className="flex justify-between"><span className="text-muted-foreground text-sm">Hours</span><span className="text-foreground">{selectedBooking.hours}</span></div>}
               <div className="flex justify-between border-t border-border pt-2"><span className="text-muted-foreground text-sm">Price</span><span className="text-gold font-serif font-bold text-xl">{Number(selectedBooking.price).toLocaleString()} DH</span></div>
@@ -960,48 +1027,101 @@ const AdminDashboard = () => {
                 className="bg-secondary/50 border-border mt-1"
               />
             </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Vito One-Way (DH)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 1500"
-                  value={newRoute.vito_one_way}
-                  onChange={(e) => setNewRoute((p) => ({ ...p, vito_one_way: e.target.value }))}
-                  className="bg-secondary/50 border-border mt-1"
-                />
+            <div className="space-y-3">
+              {/* Vito Row */}
+              <div className="grid grid-cols-2 gap-3 pb-2 border-b border-border/50">
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Vito One-Way</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1500"
+                    value={newRoute.vito_one_way}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, vito_one_way: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Vito Round-Trip</Label>
+                  <Input
+                    type="number"
+                    placeholder="Optional"
+                    value={newRoute.vito_round_trip}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, vito_round_trip: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
               </div>
-              <div>
-                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Lodgy One-Way (DH)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 1400"
-                  value={newRoute.dacia_one_way}
-                  onChange={(e) => setNewRoute((p) => ({ ...p, dacia_one_way: e.target.value }))}
-                  className="bg-secondary/50 border-border mt-1"
-                />
+
+              {/* Lodgy Row */}
+              <div className="grid grid-cols-2 gap-3 pb-2 border-b border-border/50">
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Lodgy One-Way</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1400"
+                    value={newRoute.dacia_one_way}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, dacia_one_way: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Lodgy Round-Trip</Label>
+                  <Input
+                    type="number"
+                    placeholder="Optional"
+                    value={newRoute.dacia_round_trip}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, dacia_round_trip: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
               </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Vito Round Trip (optional)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 2500"
-                  value={newRoute.vito_round_trip}
-                  onChange={(e) => setNewRoute((p) => ({ ...p, vito_round_trip: e.target.value }))}
-                  className="bg-secondary/50 border-border mt-1"
-                />
+
+              {/* Octavia Row */}
+              <div className="grid grid-cols-2 gap-3 pb-2 border-b border-border/50">
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Octavia One-Way</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1450"
+                    value={newRoute.octavia_one_way}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, octavia_one_way: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Octavia Round-Trip</Label>
+                  <Input
+                    type="number"
+                    placeholder="Optional"
+                    value={newRoute.octavia_round_trip}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, octavia_round_trip: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
               </div>
-              <div>
-                <Label className="text-muted-foreground text-xs uppercase tracking-wider">Lodgy Round Trip (optional)</Label>
-                <Input
-                  type="number"
-                  placeholder="e.g. 2400"
-                  value={newRoute.dacia_round_trip}
-                  onChange={(e) => setNewRoute((p) => ({ ...p, dacia_round_trip: e.target.value }))}
-                  className="bg-secondary/50 border-border mt-1"
-                />
+
+              {/* Karoq Row */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Karoq One-Way</Label>
+                  <Input
+                    type="number"
+                    placeholder="e.g. 1600"
+                    value={newRoute.karoq_one_way}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, karoq_one_way: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
+                <div>
+                  <Label className="text-muted-foreground text-xs uppercase tracking-wider">Karoq Round-Trip</Label>
+                  <Input
+                    type="number"
+                    placeholder="Optional"
+                    value={newRoute.karoq_round_trip}
+                    onChange={(e) => setNewRoute((p) => ({ ...p, karoq_round_trip: e.target.value }))}
+                    className="bg-secondary/50 border-border mt-1 h-8 text-sm"
+                  />
+                </div>
               </div>
             </div>
             <Button onClick={addRoute} className="w-full gold-gradient text-primary-foreground font-semibold rounded-xl">
